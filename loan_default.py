@@ -66,6 +66,35 @@ numeric_columns = [
 df[numeric_columns] = df[numeric_columns].apply(pd.to_numeric, errors="coerce")
 
 desc_stats = df.describe()
-desc_stats
+print(desc_stats)
 
 df = df.drop("LoanID", axis=1)
+
+correlation_matrix = df.corr()
+sns.heatmap(correlation_matrix, annot=True, cmap="coolwarm")
+fig.show()
+
+
+from sklearn.linear_model import LogisticRegression
+
+X = df[["Income", "CreditScore", "LoanAmount", "Age"]]  # Predictor variables
+y = df["Default"]  # Target variable (classification)
+log_reg = LogisticRegression().fit(X, y)
+print("Logistic regression coefficients:", log_reg.coef_)
+
+from scipy.stats import chi2_contingency
+
+# Chi-square test between Education and Default status
+contingency_table = pd.crosstab(df["Education"], df["Default"])
+chi2, p, dof, ex = chi2_contingency(contingency_table)
+print(f"Chi-Square Test: chi2={chi2}, p-value={p}")
+
+from scipy.stats import f_oneway
+
+# One-way ANOVA for LoanAmount across different Education levels
+anova_result = f_oneway(
+    df[df["Education"] == 1]["LoanAmount"],
+    df[df["Education"] == 2]["LoanAmount"],
+    df[df["Education"] == 3]["LoanAmount"],
+)
+print(f"ANOVA result: F={anova_result.statistic}, p-value={anova_result.pvalue}")
